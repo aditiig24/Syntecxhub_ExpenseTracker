@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>React Expense Tracker</title>
+
+  <!-- React via CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input, button {
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background: #2d89ff;
+      color: white;
+      cursor: pointer;
+      border: none;
+    }
+
+    button:hover {
+      background: #0f65e8;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    .delete-btn {
+      background: #ff4b4b;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .total {
+      text-align: right;
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
+      th, td {
+        font-size: 14px;
+      }
+      input, button {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel">
+
+const { useState, useEffect, useRef, useMemo, useCallback } = React;
+
+function ExpenseTracker() {
+
+  // --------------------------
+  // STATES
+  // --------------------------
+  const [name, setName] = useState("");
+  const [amount, setAmount] = useState("");
+  const [expenses, setExpenses] = useState([]);
+
+  // --------------------------
+  // useRef → focus manager
+  // --------------------------
+  const nameInputRef = useRef(null);
+
+  useEffect(() => {
+    nameInputRef.current.focus();
+  }, []);
+
+  // --------------------------
+  // useEffect → mock API fetch
+  // --------------------------
+  useEffect(() => {
+    // Simulated async fetch
+    setTimeout(() => {
+      const mockData = [
+        { id: 1, name: "Groceries", amount: 50 },
+        { id: 2, name: "Transport", amount: 20 }
+      ];
+      setExpenses(mockData);
+    }, 800);
+  }, []);
+
+  // --------------------------
+  // useCallback → optimized handlers
+  // --------------------------
+  const addExpense = useCallback(() => {
+    if (!name || !amount) return;
+
+    const newExpense = {
+      id: Date.now(),
+      name,
+      amount: parseFloat(amount)
+    };
+
+    setExpenses(prev => [...prev, newExpense]);
+    setName("");
+    setAmount("");
+    nameInputRef.current.focus(); // ref usage
+  }, [name, amount]);
+
+  const deleteExpense = useCallback((id) => {
+    setExpenses(prev => prev.filter(exp => exp.id !== id));
+  }, []);
+
+  // --------------------------
+  // useMemo → optimized total
+  // --------------------------
+  const total = useMemo(() => {
+    return expenses.reduce((sum, exp) => sum + exp.amount, 0);
+  }, [expenses]);
+
+  return (
+    <div className="container">
+
+      <h2>Expense Tracker</h2>
+
+      <div className="form-group">
+        <input
+          ref={nameInputRef}
+          type="text"
+          placeholder="Expense Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+
+        <input
+          type="number"
+          placeholder="Amount"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
+
+        <button onClick={addExpense}>Add Expense</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Expense</th>
+            <th>Amount ($)</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {expenses.map(exp => (
+            <tr key={exp.id}>
+              <td>{exp.name}</td>
+              <td>{exp.amount.toFixed(2)}</td>
+              <td>
+                <button className="delete-btn" onClick={() => deleteExpense(exp.id)}>
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div className="total">Total: ${total.toFixed(2)}</div>
+    </div>
+  );
+}
+
+// Render App
+ReactDOM.createRoot(document.getElementById("root")).render(<ExpenseTracker />);
+
+</script>
+</body>
+</html>
+
+     
+     
+     
+   
